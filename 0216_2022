@@ -23,7 +23,7 @@ hw_timer_t *timer = NULL; //counter
 
 void IRAM_ATTR diffMode() //enter interrupt and read and forward the data
 {
-    Serial.println("read here");
+    Serial.println("read here"); //changes needed
 }
 
 void changeMode()
