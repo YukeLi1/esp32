@@ -75,13 +75,13 @@ void setup()
 {
     Serial.begin(115200);
 	
-	//attach interrupt from sudden falling
-	pinMode(32, INPUT_PULLUP);
+    //attach interrupt from sudden falling
+    pinMode(32, INPUT_PULLUP);
     attachInterrupt(32, changeMode, FALLING); //GPIO32 is used for accelerator
 
-	//timer->counter
-	timer = timerBegin(0, 80000, true); //timer count per 1ms (count up)
-	timerAttachInterrupt(timer, &diffMode, true);//trigger by pulse
+    //timer->counter
+    timer = timerBegin(0, 80000, true); //timer count per 1ms (count up)
+    timerAttachInterrupt(timer, &diffMode, true);//trigger by pulse
 #if 0==mode //emergent
     timerAlarmWrite(timer, 60000, true); //read per min
 #elif 1==mode
