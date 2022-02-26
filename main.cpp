@@ -18,7 +18,6 @@ int mode=0; //0->normal mode(1 per min); 1->emergency mode(1 per sec)
 hw_timer_t *timer = NULL; //counter
 //I2C
 int MPU6050_Addr = 0x68; 
-int MAX30102_Addr= 0x57;
 #define X_Axis_DATAXH 0x3B // Hexadecima address for the DATAX internal register.
 #define X_Axis_DATAXL 0x3C 
 #define Y_Axis_DATAXH 0x3D 
@@ -87,7 +86,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
 void setup()
 {   Wire.begin();
     Serial.begin(115200);
-	
+	Wire.beginTransmission(MPU6050_Addr);
+    Wire.write(0x6B);// Bit D3 High for measuring enable (0000 1000)
+    Wire.write(0);  
+    Wire.endTransmission(true);
 	//attach interrupt from sudden falling
 	pinMode(32, INPUT_PULLUP);
     attachInterrupt(32, changeMode, FALLING); //GPIO32 is used for accelerator
@@ -142,7 +144,7 @@ void loop()
     {
         delay(500);                  // 留时间给蓝牙缓冲
         pServer->startAdvertising(); // 重新广播
-        Serial.println(" 开始广播 ");
+        Serial.println(" start broadcasting");
         oldDeviceConnected = deviceConnected;
     }
 
@@ -154,25 +156,23 @@ void loop()
     }
 
     Wire.beginTransmission(MPU6050_Addr); // Begin transmission to the Sensor 
+    //Wire.beginTransmission(MAX30102_Addr);
     //Ask the particular registers for data
     Wire.write(X_Axis_DATAXH);
-    Wire.write(X_Axis_DATAXL);
-    Wire.write(Y_Axis_DATAXH);
-    Wire.write(Y_Axis_DATAXL);
-    Wire.write(Z_Axis_DATAXH);
-    Wire.write(Z_Axis_DATAXL);
-  
-    Wire.requestFrom(MPU6050_Addr,2,true); // Request the transmitted two bytes from the two registers
     Wire.endTransmission(true); // Ends the transmission and transmits the data from the two registers
-  
-    if(Wire.available()<=2) 
+    Wire.requestFrom(MPU6050_Addr,6,true); // Request the transmitted two bytes from the two registers
+
+    if(Wire.available()<=6) 
     {  // 
        XH = Wire.read(); // Reads the data from the register
        XL = Wire.read();   
        YH = Wire.read(); // Reads the data from the register
        YL = Wire.read();   
        ZH = Wire.read(); // Reads the data from the register
-       ZL = Wire.read();   
+       ZL = Wire.read(); 
+       /*
+       XH=Wire.read();
+       XH= (XH<<8)|Wire.read();*/
     }
     Serial.print("XH= ");
     Serial.print(XH);
